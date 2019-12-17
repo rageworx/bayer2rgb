@@ -1,16 +1,18 @@
 # bayer2rgb for modern G++
 
 ## Copyright
-Original codes from https://github.com/jdthomas/bayer2rgb
+ * Original codes from https://github.com/jdthomas/bayer2rgb
+ * Jeff Thomas
+
+## Copyleft
+ * Me, Raphael Kim
 
 ## Introducing bayer2rgb 
 
-bayer2rgb will convert naked (no header) bayer grid data into rgb data. There are several choices of interpolation (though they all look essentially the same to my eye). It can output tiff files, and can integrate with ImageMagick to output other formats. 
-
-I borrowed the bayer.c from the libdc1394 project [1], it is licensed under LGPL.
-
-This is an implementation of the idea I stumbled upon on ImageMagick's mailing list while searching for a bayer grid converter. The thread can be found at [2].The interpolation algorithms used are described at [3].
-
+bayer2rgb will convert naked (no header) raw bayer color space into RGB. 
+There are several choices of interpolation (though they all look essentially the same to my eye). It can output tiff files, and can integrate with ImageMagick to output other formats.
+I borrowed the bayer.c from the libdc1394 project, it is licensed under LGPL.
+The interpolation algorithms used are described at external reference links.
 
 # Additional requirements for MinGW-W64 (w/ msys2)
  * mman-win32 ( https://github.com/witwall/mman-win32 )
