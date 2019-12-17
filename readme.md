@@ -16,8 +16,13 @@ This is an implementation of the idea I stumbled upon on ImageMagick's mailing l
  * mman-win32 ( https://github.com/witwall/mman-win32 )
  * configure and build mman-win32, then install to msys2.
 
-# Build
+## Tested on 
+ * Windows10 - MinGW-W64, g++ 9.2.0 (msys2 build)
+ * Debian linux armhf, g++ 6.3.0 (raspberrypi3bp)
+ * Debian linux aarch64, g++ 6.3.0
 
+# How to build
+Just type ... 
 ```
 make
 ```
@@ -39,10 +44,9 @@ make
 ```
 
 # External reference links
-
-[1] http://sourceforge.net/projects/libdc1394
-[2] http://www.imagemagick.org/pipermail/magick-developers/2008-May/002953.html
-[3] http://scien.stanford.edu/class/psych221/projects/99/tingchen/main.htm
+1. http://sourceforge.net/projects/libdc1394
+1. http://www.imagemagick.org/pipermail/magick-developers/2008-May/002953.html
+1. http://scien.stanford.edu/class/psych221/projects/99/tingchen/main.htm
 
 
 # ImageMagick Integration
