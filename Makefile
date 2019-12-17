@@ -25,7 +25,7 @@ prepare:
 	@mkdir -p obj
 	
 $(TARGET): src/bayer2rgb.cpp obj/bayer.o
-	$(CXX) $(CXXFLAGS) $< obj/*.o $(LDFLAGS) -o $@
+	@$(CXX) $(CXXFLAGS) $< obj/*.o $(LDFLAGS) -o $@
 
 obj/bayer.o: src/bayer.cpp
 	@$(CXX) $(CXXFLAGS) -c $< -o $@

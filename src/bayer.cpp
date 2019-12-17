@@ -1465,14 +1465,23 @@ BayerConv::error_t bayer_VNG( const uint8_t* bayer, uint8_t* dst, int sx, int sy
                 weight = *cp++;
                 grads = *cp++;
                 color = FC(row+y1,col+x1);
-                if (FC(row+y2,col+x2) != color) continue;
-                diag = (FC(row,col+1) == color && FC(row+1,col) == color) ? 2:1;
-                if (abs(y1-y2) == diag && abs(x1-x2) == diag) continue;
+
+                if ( (int)FC(row+y2,col+x2) != color) 
+                    continue;
+
+                diag = ( (int)FC(row,col+1) == color 
+                         && (int)FC(row+1,col) == color ) ? 2:1;
+
+                if (abs(y1-y2) == diag && abs(x1-x2) == diag) 
+                    continue;
+
                 *ip++ = (y1*width + x1)*3 + color; /* [FD] */
                 *ip++ = (y2*width + x2)*3 + color; /* [FD] */
                 *ip++ = weight;
+
                 for (g=0; g < 8; g++)
                     if (grads & 1<<g) *ip++ = g;
+
                 *ip++ = -1;
             }
 
@@ -1483,7 +1492,7 @@ BayerConv::error_t bayer_VNG( const uint8_t* bayer, uint8_t* dst, int sx, int sy
                 y = *cp++;  x = *cp++;
                 *ip++ = (y*width + x) * 3;      /* [FD] */
                 color = FC(row,col);
-                if (FC(row+y,col+x) != color && FC(row+y*2,col+x*2) == color)
+                if ((int)FC(row+y,col+x) != color && (int)FC(row+y*2,col+x*2) == color)
                     *ip++ = (y*width + x) * 6 + color; /* [FD] */
                 else
                     *ip++ = 0;
@@ -1617,9 +1626,12 @@ BayerConv::error_t bayer_VNG_uint16( const uint16_t* bayer, uint16_t* dst, int s
                 weight = *cp++;
                 grads = *cp++;
                 color = FC(row+y1,col+x1);
-                if (FC(row+y2,col+x2) != color) continue;
-                diag = (FC(row,col+1) == color && FC(row+1,col) == color) ? 2:1;
-                if (abs(y1-y2) == diag && abs(x1-x2) == diag) continue;
+                if ((int)FC(row+y2,col+x2) != color) 
+                    continue;
+                diag = ((int)FC(row,col+1) == color 
+                         && (int)FC(row+1,col) == color) ? 2:1;
+                if (abs(y1-y2) == diag && abs(x1-x2) == diag) 
+                    continue;
                 *ip++ = (y1*width + x1)*3 + color; /* [FD] */
                 *ip++ = (y2*width + x2)*3 + color; /* [FD] */
                 *ip++ = weight;
@@ -1635,10 +1647,15 @@ BayerConv::error_t bayer_VNG_uint16( const uint16_t* bayer, uint16_t* dst, int s
                 y = *cp++;  x = *cp++;
                 *ip++ = (y*width + x) * 3;      /* [FD] */
                 color = FC(row,col);
-                if (FC(row+y,col+x) != color && FC(row+y*2,col+x*2) == color)
+                if ((int)FC(row+y,col+x) != color 
+                     && (int)FC(row+y*2,col+x*2) == color)
+                {
                     *ip++ = (y*width + x) * 6 + color; /* [FD] */
+                }
                 else
+                {
                     *ip++ = 0;
+                }
             }
         }
     }
@@ -1839,7 +1856,8 @@ BayerConv::error_t bayer_AHD( const uint8_t* bayer, uint8_t* dst, int sx, int sy
     /* start - code from border_interpolate (int border) */
     {
         int border = 3;
-        unsigned row, col, y, x, f, c, sum[8];
+        //unsigned row, col, y, x, f, c, sum[8];
+        int row, col, y, x, f, c, sum[8];
 
         for (row=0; row < height; row++)
             for (col=0; col < width; col++) 
@@ -2025,7 +2043,8 @@ BayerConv::error_t bayer_AHD_uint16(const uint16_t* bayer, uint16_t* dst, int sx
     /* start - code from border_interpolate(int border) */
     {
         int border = 3;
-        unsigned row, col, y, x, f, c, sum[8];
+        //unsigned row, col, y, x, f, c, sum[8];
+        int row, col, y, x, f, c, sum[8];
 
         for (row=0; row < height; row++)
             for (col=0; col < width; col++) 
