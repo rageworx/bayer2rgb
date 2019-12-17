@@ -3,6 +3,7 @@
  * This file is part of bayer2rgb.
  *
  * Copyright (c) 2009 Jeff Thomas
+ * Copyleft  (c) 2019 Raphael Kim
  *
  * bayer2rgb is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,19 +19,24 @@
  * License along with FFmpeg; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  **/
-
+ 
+#include <unistd.h>
 #include <fcntl.h>
 #include <getopt.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <unistd.h>
 
 #include "bayer.h"
+
+using namespace std;
+using namespace BayerConv;
 
 // tiff types: short = 3, int = 4
 // Tags: ( 2-byte tag ) ( 2-byte type ) ( 4-byte count ) ( 4-byte data )
@@ -43,7 +49,7 @@
 //
 #define TIFF_HDR_NUM_ENTRY 8
 #define TIFF_HDR_SIZE 10+TIFF_HDR_NUM_ENTRY*12 
-uint8_t tiff_header[TIFF_HDR_SIZE] = {
+const uint8_t tiff_header[TIFF_HDR_SIZE] = {
 	// I     I     42    
 	  0x49, 0x49, 0x2a, 0x00,
 	// ( offset to tags, 0 )  
@@ -67,8 +73,8 @@ uint8_t tiff_header[TIFF_HDR_SIZE] = {
 	// ( Strip byte count )
 	  0x17, 0x01, 0x04, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
 };
-uint8_t * 
-put_tiff(uint8_t * rgb, uint32_t width, uint32_t height, uint16_t bpp)
+
+uint8_t* put_tiff(uint8_t* rgb, uint32_t width, uint32_t height, uint16_t bpp)
 {
 	uint32_t ulTemp=0;
 	uint16_t sTemp=0;
@@ -92,46 +98,43 @@ put_tiff(uint8_t * rgb, uint32_t width, uint32_t height, uint16_t bpp)
 	return rgb + TIFF_HDR_SIZE;
 };
 
-
-dc1394bayer_method_t
-getMethod(char* m)
+bayer_method_t getMethod(char* m)
 {
 	if( strcmp(m, "NEAREST") == 0 )
-		return DC1394_BAYER_METHOD_NEAREST;
+		return BAYER_METHOD_NEAREST;
 	if( strcmp(m, "SIMPLE") == 0 )
-		return DC1394_BAYER_METHOD_SIMPLE;
+		return BAYER_METHOD_SIMPLE;
 	if( strcmp(m, "BILINEAR") == 0 )
-		return DC1394_BAYER_METHOD_BILINEAR;
+		return BAYER_METHOD_BILINEAR;
 	if( strcmp(m, "HQLINEAR") == 0 )
-		return DC1394_BAYER_METHOD_HQLINEAR;
+		return BAYER_METHOD_HQLINEAR;
 	if( strcmp(m, "DOWNSAMPLE") == 0 )
-		return DC1394_BAYER_METHOD_DOWNSAMPLE;
+		return BAYER_METHOD_DOWNSAMPLE;
 	if( strcmp(m, "EDGESENSE") == 0 )
-		return DC1394_BAYER_METHOD_EDGESENSE;
+		return BAYER_METHOD_EDGESENSE;
 	if( strcmp(m, "VNG") == 0 )
-		return DC1394_BAYER_METHOD_VNG;
+		return BAYER_METHOD_VNG;
 	if( strcmp(m, "AHD") == 0 )
-		return DC1394_BAYER_METHOD_AHD;
+		return BAYER_METHOD_AHD;
 
 	printf("WARNING: Unrecognized method \"%s\", defaulting to BILINEAR\n", m);
-	return DC1394_BAYER_METHOD_BILINEAR;
+	return BAYER_METHOD_BILINEAR;
 }
 
 
-dc1394color_filter_t
-getFirstColor(char *f)
+color_filter_t getFirstColor(char *f)
 {
 	if( strcmp(f, "RGGB") == 0 )
-		return DC1394_COLOR_FILTER_RGGB;
+		return COLOR_FILTER_RGGB;
 	if( strcmp(f, "GBRG") == 0 )
-		return DC1394_COLOR_FILTER_GBRG;
+		return COLOR_FILTER_GBRG;
 	if( strcmp(f, "GRBG") == 0 )
-		return DC1394_COLOR_FILTER_GRBG;
+		return COLOR_FILTER_GRBG;
 	if( strcmp(f, "BGGR") == 0 )
-		return DC1394_COLOR_FILTER_BGGR;
+		return COLOR_FILTER_BGGR;
 
 	printf("WARNING: Unrecognized first color \"%s\", defaulting to RGGB\n", f);
-	return DC1394_COLOR_FILTER_RGGB;
+	return COLOR_FILTER_RGGB;
 }
 
 void
@@ -144,19 +147,20 @@ usage( char * name )
 	printf("   --height,-v    image height (pixels)\n");
 	printf("   --bpp,-b       bits per pixel\n");
 	printf("   --first,-f     first pixel color: RGGB, GBRG, GRBG, BGGR\n");
-	printf("   --method,-m    interpolation method: NEAREST, SIMPLE, BILINEAR, HQLINEAR, DOWNSAMPLE, EDGESENSE, VNG, AHD\n");
+	printf("   --method,-m    interpolation method: \n" );
+    printf("                        NEAREST, SIMPLE, BILINEAR, HQLINEAR, \n" );
+    printf("                        DOWNSAMPLE, EDGESENSE, VNG, AHD\n");
 	printf("   --tiff,-t      add a tiff header\n");
 	printf("   --swap,-s      if bpp == 16, swap byte order before conversion\n");
 	printf("   --help,-h      this helpful message\n");
 }
 
-int
-main( int argc, char ** argv )
+int main( int argc, char ** argv )
 {
     uint32_t in_size=0, out_size=0, width=0, height=0, bpp=0;
-    int first_color = DC1394_COLOR_FILTER_RGGB;
+    color_filter_t first_color = COLOR_FILTER_RGGB;
+	bayer_method_t method = BAYER_METHOD_BILINEAR;
 	int tiff = 0;
-	int method = DC1394_BAYER_METHOD_BILINEAR;
     char *infile=NULL, *outfile=NULL;
     int input_fd = 0;
     int output_fd = 0;
@@ -272,13 +276,13 @@ main( int argc, char ** argv )
 
 	if(tiff)
 	{
-		rgb_start = put_tiff(rgb, width, height, bpp);
+		rgb_start = put_tiff( (uint8_t*)rgb, width, height, bpp);
 	}
 #if 1
 	switch(bpp)
 	{
 		case 8:
-			dc1394_bayer_decoding_8bit((const uint8_t*)bayer, (uint8_t*)rgb_start, width, height, first_color, method);
+			decoding_8bit((const uint8_t*)bayer, (uint8_t*)rgb_start, width, height, first_color, method);
 			break;
 		case 16:
 		default:
@@ -291,7 +295,7 @@ main( int argc, char ** argv )
                     *(((uint8_t*)bayer)+i+1) = tmp;
                 }
             }
-			dc1394_bayer_decoding_16bit((const uint16_t*)bayer, (uint16_t*)rgb_start, width, height, first_color, method, bpp);
+			decoding_16bit((const uint16_t*)bayer, (uint16_t*)rgb_start, width, height, first_color, method, bpp);
 			break;
 	}
 #endif
@@ -317,8 +321,10 @@ main( int argc, char ** argv )
     if( msync(rgb, out_size, MS_INVALIDATE|MS_SYNC) != 0 )
 		perror("Problem msyncing");
     munmap(rgb,out_size);
+#ifndef _WIN32
     if( fsync(output_fd) != 0 )
 		perror("Problem fsyncing");
+#endif /// of _WIN32
     close(output_fd);
 
     return 0;

@@ -1,23 +1,35 @@
-CC=gcc
-#CFLAGS=-std=c99
+CXX      = g++
+CXXFLAGS = -std=c++11
+LDFLAGS  = -lm
 
 ifdef DEBUG
-  CFLAGS += -ggdb -Wall -DDEBUG
+  CXXFLAGS += -ggdb -Wall -DDEBUG
 else
-  CFLAGS += -O3 -Wall
+  CXXFLAGS += -O3 -Wall
 endif
 
-
-all: bayer2rgb
-	
-bayer2rgb: bayer2rgb.c bayer.o
-	$(CC) $(CFLAGS) -o bayer2rgb bayer.o bayer2rgb.c -lm
 ifdef RELEASE
-	strip bayer2rgb
+  CXXFLAGS += -s
 endif
 
-bayer.o: bayer.c
-	$(CC) $(CFLAGS) -std=c99 -c bayer.c
+ifdef MINGW_PREFIX
+  LDFLAGS += -lmman
+endif
+
+TARGET = bin/bayer2rgb
+
+all: prepare $(TARGET)
+
+prepare:
+	@mkdir -p bin
+	@mkdir -p obj
+	
+$(TARGET): src/bayer2rgb.cpp obj/bayer.o
+	$(CXX) $(CXXFLAGS) $< obj/*.o $(LDFLAGS) -o $@
+
+obj/bayer.o: src/bayer.cpp
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	-rm bayer2rgb bayer.o *\~ 
+	@rm -rf $(TARGET)
+	@rm -rf obj/*.o
