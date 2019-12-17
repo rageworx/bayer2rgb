@@ -252,7 +252,13 @@ int main( int argc, char ** argv )
 
     out_size = width * height * (bpp / 8) * 3 + tiff;
 
-    ftruncate(output_fd, out_size );
+    if ( ftruncate( output_fd, out_size ) != 0 )
+    {
+        perror( "output ftruncate failure." );
+        close( output_fd );
+        close( input_fd );
+        return 1;
+    }
 
     bayer = mmap(NULL, in_size, PROT_READ | PROT_WRITE, MAP_PRIVATE /*| MAP_POPULATE*/, input_fd, 0);
     if( bayer == MAP_FAILED )

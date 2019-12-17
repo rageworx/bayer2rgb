@@ -19,7 +19,8 @@ The interpolation algorithms used are described at external reference links.
  * configure and build mman-win32, then install to msys2.
 
 ## Tested on 
- * Windows10 - MinGW-W64, g++ 9.2.0 (msys2 build)
+ * Linux Mint 18.x x86.64, g++ 5.4.0
+ * Windows10 x86.64 MinGW-W64, g++ 9.2.0 (msys2 build)
  * Debian linux armhf, g++ 6.3.0 (raspberrypi3bp)
  * Debian linux aarch64, g++ 6.3.0
 
